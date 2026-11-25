@@ -143,6 +143,45 @@ class BookControllerTests {
     }
 
     @Test
+    void duplicateIsbnReturns409() throws Exception {
+        Book existing = save("Clean Code", "Robert C. Martin", "9780132350884", true);
+        Book other = save("Refactoring", "Martin Fowler", "9780134757599", true);
+
+        mockMvc.perform(post("/api/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title": "Copy", "author": "Someone", "isbn": "9780132350884"}
+                                """))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.detail").value("A book with ISBN 9780132350884 already exists"));
+        mockMvc.perform(put("/api/books/{id}", other.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title": "Refactoring", "author": "Martin Fowler", "isbn": "9780132350884"}
+                                """))
+                .andExpect(status().isConflict());
+        mockMvc.perform(put("/api/books/{id}", existing.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title": "Clean Code", "author": "Robert C. Martin", "isbn": "9780132350884"}
+                                """))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void blankIsbnIsStoredAsAbsentSoItNeverConflicts() throws Exception {
+        for (String title : new String[] {"First", "Second"}) {
+            mockMvc.perform(post("/api/books")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("""
+                                    {"title": "%s", "author": "A", "isbn": " "}
+                                    """.formatted(title)))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.isbn").doesNotExist());
+        }
+    }
+
+    @Test
     void searchesByTitleAuthorAndAvailability() throws Exception {
         save("Clean Code", "Robert C. Martin", null, true);
         save("Clean Architecture", "Robert C. Martin", null, false);

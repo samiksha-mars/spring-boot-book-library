@@ -25,6 +25,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return detail;
     }
 
+    @ExceptionHandler(DuplicateIsbnException.class)
+    public ProblemDetail handleDuplicateIsbn(DuplicateIsbnException ex) {
+        ProblemDetail detail = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, ex.getMessage());
+        detail.setTitle("Duplicate ISBN");
+        return detail;
+    }
+
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
             HttpHeaders headers, HttpStatusCode status, WebRequest request) {
