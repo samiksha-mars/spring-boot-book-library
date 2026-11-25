@@ -6,6 +6,8 @@ import com.example.booklibrary.exception.DuplicateIsbnException;
 import com.example.booklibrary.model.Book;
 import com.example.booklibrary.repository.BookRepository;
 import java.util.List;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +22,19 @@ public class BookService {
 
     @Transactional(readOnly = true)
     public List<BookResponse> search(String title, String author, Boolean available) {
-        List<Book> books;
-        if (title != null) {
-            books = repository.findByTitleContainingIgnoreCase(title);
-        } else if (author != null) {
-            books = repository.findByAuthorContainingIgnoreCase(author);
-        } else if (available != null) {
-            books = repository.findByAvailable(available);
+        // Null probe fields are ignored, so only the filters that were supplied apply.
+        Book probe = new Book();
+        probe.setTitle(title);
+        probe.setAuthor(author);
+        ExampleMatcher matcher = ExampleMatcher.matching()
+                .withIgnoreCase()
+                .withStringMatcher(ExampleMatcher.StringMatcher.CONTAINING);
+        if (available == null) {
+            matcher = matcher.withIgnorePaths("available");
         } else {
-            books = repository.findAll();
+            probe.setAvailable(available);
         }
-        return books.stream().map(this::toResponse).toList();
+        return repository.findAll(Example.of(probe, matcher)).stream().map(this::toResponse).toList();
     }
 
     @Transactional(readOnly = true)

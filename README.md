@@ -6,8 +6,8 @@ persisted to an in-memory H2 database and can be searched by title or author.
 ## Features
 
 - Create, read, update and delete books
-- Search by title or author (case-insensitive substring match)
-- Filter by availability
+- Search by title and/or author (case-insensitive substring match)
+- Filter by availability (combinable with the title/author search)
 - Bean Validation on input
 - In-memory H2 database with console
 

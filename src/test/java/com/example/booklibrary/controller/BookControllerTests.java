@@ -198,4 +198,29 @@ class BookControllerTests {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].title").value("Clean Architecture"));
     }
+
+    @Test
+    void searchFiltersCanBeCombined() throws Exception {
+        save("Clean Code", "Robert C. Martin", null, true);
+        save("Clean Architecture", "Robert C. Martin", null, false);
+        save("Refactoring", "Martin Fowler", null, true);
+
+        mockMvc.perform(get("/api/books").param("author", "martin").param("available", "true"))
+                .andExpect(jsonPath("$", hasSize(2)));
+        mockMvc.perform(get("/api/books").param("title", "clean").param("available", "false"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("Clean Architecture"));
+        mockMvc.perform(get("/api/books").param("title", "clean").param("author", "fowler"))
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void searchTreatsWildcardCharactersLiterally() throws Exception {
+        save("100% Coverage", "A", null, true);
+        save("Other", "B", null, true);
+
+        mockMvc.perform(get("/api/books").param("title", "%"))
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].title").value("100% Coverage"));
+    }
 }
