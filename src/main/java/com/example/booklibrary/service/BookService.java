@@ -64,7 +64,7 @@ public class BookService {
         book.setAuthor(request.author());
         book.setIsbn(request.isbn());
         book.setPublishedYear(request.publishedYear());
-        book.setAvailable(request.available());
+        book.setAvailable(Boolean.TRUE.equals(request.available()));
     }
 
     private BookResponse toResponse(Book book) {

@@ -59,6 +59,17 @@ class BookControllerTests {
     }
 
     @Test
+    void availableDefaultsToFalseWhenOmitted() throws Exception {
+        mockMvc.perform(post("/api/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"title": "Clean Code", "author": "Robert C. Martin"}
+                                """))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.available").value(false));
+    }
+
+    @Test
     void getReturnsBookById() throws Exception {
         Book book = save("Refactoring", "Martin Fowler", "9780134757599", true);
 

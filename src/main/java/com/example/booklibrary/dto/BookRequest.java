@@ -17,6 +17,6 @@ public record BookRequest(
         @Min(value = 1000, message = "publishedYear must be at least 1000")
         @Max(value = 2100, message = "publishedYear must be at most 2100")
         Integer publishedYear,
-        boolean available
+        Boolean available
 ) {
 }
