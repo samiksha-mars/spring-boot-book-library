@@ -126,8 +126,20 @@ class BookControllerTests {
                         .content("""
                                 {"title": " ", "author": "A", "publishedYear": 3000, "available": true}
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail").value("Request validation failed"))
+                .andExpect(jsonPath("$.errors.title").value("title must not be blank"))
+                .andExpect(jsonPath("$.errors.publishedYear").value("publishedYear must be at most 2100"));
         assertThat(repository.count()).isZero();
+    }
+
+    @Test
+    void malformedJsonReturnsProblemDetail() throws Exception {
+        mockMvc.perform(post("/api/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"title\": "))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400));
     }
 
     @Test
